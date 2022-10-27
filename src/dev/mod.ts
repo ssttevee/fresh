@@ -161,7 +161,7 @@ export default manifest;
   );
 }
 
-export async function dev(base: string, entrypoint: string) {
+export async function dev(base: string, entrypoint: string, collectFn = collect) {
   ensureMinDenoVersion();
 
   entrypoint = new URL(entrypoint, base).href;
@@ -175,7 +175,7 @@ export async function dev(base: string, entrypoint: string) {
   } else {
     currentManifest = { islands: [], routes: [] };
   }
-  const newManifest = await collect(dir);
+  const newManifest = await collectFn(dir);
   Deno.env.set("FRSH_DEV_PREVIOUS_MANIFEST", JSON.stringify(newManifest));
 
   const manifestChanged =
