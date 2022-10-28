@@ -227,6 +227,23 @@ export interface Middleware<State = Record<string, unknown>> {
   handler: MiddlewareHandler<State> | MiddlewareHandler<State>[];
 }
 
+// --- LAYOUTS ---
+
+export interface LayoutModule {
+  default: (component: ComponentType<PageProps>) => ComponentType<PageProps>;
+}
+
+export interface LayoutRoute extends LayoutModule {
+  /**
+   * path-to-regexp style url path
+   */
+  pattern: string;
+  /**
+   * URLPattern of the route
+   */
+  compiledPattern: URLPattern;
+}
+
 // --- ISLANDS ---
 
 export interface IslandModule {
