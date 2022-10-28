@@ -454,9 +454,10 @@ export class ServerContext {
       if (this.#dev) {
         imports.push(REFRESH_JS_URL);
       }
-      return (
+      return <State = Record<string, unknown>>(
         req: Request,
         params: Record<string, string>,
+        state: State,
         error?: unknown,
       ) => {
         return async (data?: Data) => {
@@ -484,6 +485,7 @@ export class ServerContext {
             renderFn: this.#renderFn,
             url: new URL(req.url),
             params,
+            state,
             data,
             error,
           });
@@ -521,8 +523,8 @@ export class ServerContext {
           (route.handler as Handler)(req, {
             ...ctx,
             params,
-            render: createRender(req, params),
-            renderNotFound: createUnknownRender(req, {}),
+            render: createRender(req, params, ctx.state),
+            renderNotFound: createUnknownRender(req, {}, ctx.state),
           });
       } else {
         for (const [method, handler] of Object.entries(route.handler)) {
@@ -530,8 +532,8 @@ export class ServerContext {
             handler(req, {
               ...ctx,
               params,
-              render: createRender(req, params),
-              renderNotFound: createUnknownRender(req, {}),
+              render: createRender(req, params, ctx.state),
+              renderNotFound: createUnknownRender(req, {}, ctx.state),
             });
         }
       }
@@ -545,7 +547,7 @@ export class ServerContext {
         req,
         {
           ...ctx,
-          render: createUnknownRender(req, {}),
+          render: createUnknownRender(req, {}, {}),
         },
       );
 
@@ -568,7 +570,7 @@ export class ServerContext {
         {
           ...ctx,
           error,
-          render: errorHandlerRender(req, {}, error),
+          render: errorHandlerRender(req, {}, {}, error),
         },
       );
     };
