@@ -749,7 +749,7 @@ function toPascalCase(text: string): string {
 }
 
 function sanitizeIslandName(name: string): string {
-  const fileName = name.replace("/", "");
+  const fileName = name.replace(/[^a-zA-Z]/g, "");
   return toPascalCase(fileName);
 }
 
