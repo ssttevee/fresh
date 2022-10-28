@@ -703,7 +703,7 @@ function sortRoutes<T extends { pattern: string }>(routes: T[]) {
 
 /** Transform a filesystem URL path to a `path-to-regex` style matcher. */
 function pathToPattern(path: string): string {
-  const parts = path.split("/");
+  const parts = path.replace(/\.island$/, '').split("/");
   if (parts[parts.length - 1] === "index") {
     parts.pop();
   }
