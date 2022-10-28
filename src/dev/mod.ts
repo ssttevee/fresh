@@ -4,6 +4,7 @@ import {
   fromFileUrl,
   gte,
   join,
+  relative,
   toFileUrl,
   walk,
 } from "./deps.ts";
@@ -55,7 +56,7 @@ export async function collect(directory: string): Promise<Manifest> {
         const file = toFileUrl(entry.path).href.substring(
           routesUrl.href.length,
         );
-        routes.push(file);
+        routes.push("./" + relative(directory, join(routesDir, file)));
       }
     }
   } catch (err) {
@@ -81,7 +82,7 @@ export async function collect(directory: string): Promise<Manifest> {
         if (![".tsx", ".jsx", ".ts", ".js"].includes(ext)) continue;
         const path = join(islandsDir, entry.name);
         const file = toFileUrl(path).href.substring(islandsUrl.href.length);
-        islands.push(file);
+        islands.push("./" + relative(directory, join(islandsDir, file)));
       }
     }
   } catch (err) {
@@ -105,25 +106,25 @@ export async function generate(directory: string, manifest: Manifest) {
 
 import config from "./deno.json" assert { type: "json" };
 ${
-    routes.map((file, i) => `import * as $${i} from "./routes${file}";`).join(
+    routes.map((file, i) => `import * as $${i} from "${file}";`).join(
       "\n",
     )
   }
 ${
-    islands.map((file, i) => `import * as $$${i} from "./islands${file}";`)
+    islands.map((file, i) => `import * as $$${i} from "${file}";`)
       .join("\n")
   }
 
 const manifest = {
   routes: {
     ${
-    routes.map((file, i) => `${JSON.stringify(`./routes${file}`)}: $${i},`)
+    routes.map((file, i) => `${JSON.stringify(`${file}`)}: $${i},`)
       .join("\n    ")
   }
   },
   islands: {
     ${
-    islands.map((file, i) => `${JSON.stringify(`./islands${file}`)}: $$${i},`)
+    islands.map((file, i) => `${JSON.stringify(`${file}`)}: $$${i},`)
       .join("\n    ")
   }
   },

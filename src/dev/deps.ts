@@ -4,6 +4,7 @@ export {
   extname,
   fromFileUrl,
   join,
+  relative,
   resolve,
   toFileUrl,
 } from "https://deno.land/std@0.150.0/path/mod.ts";
