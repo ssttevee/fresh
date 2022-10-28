@@ -153,10 +153,11 @@ export class ServerContext {
       const isMiddleware = path.endsWith("/_middleware.tsx") ||
         path.endsWith("/_middleware.ts") || path.endsWith("/_middleware.jsx") ||
         path.endsWith("/_middleware.js");
-      const isLayout = Boolean(path.match("/_layout.[jt]sx?$"));
+      const isLayout = Boolean(path.match(/\/_layout!?.[jt]sx?$/));
       if (isLayout) {
         layouts.push({
-          ...middlewarePathToPattern(baseRoute, "_layout"),
+          top: baseRoute.endsWith("!"),
+          ...middlewarePathToPattern(baseRoute.replace("!", ""), "_layout"),
           ...module as LayoutModule,
         });
       } else if (!path.startsWith("/_") && !isMiddleware) {
@@ -700,15 +701,19 @@ function applyLayouts(routes: Route[], layouts: LayoutRoute[]) {
       continue;
     }
 
-    let path = route.pattern;
-    while (path) {
+    let path = route.pattern + "/";
+    do {
+      path = path.replace(/\/[^/]*$/, "");
+
       const layout = layoutMap[path + "{/*}?"];
       if (layout) {
         route.component = layout.default(route.component);
-      }
 
-      path = path.replace(/\/[^/]*$/, "");
-    }
+        if (layout.top) {
+          break;
+        }
+      }
+    } while (path);
   }
 }
 

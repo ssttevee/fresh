@@ -231,6 +231,7 @@ export interface Middleware<State = Record<string, unknown>> {
 
 export interface LayoutModule {
   default: (component: ComponentType<PageProps>) => ComponentType<PageProps>;
+  top?: boolean;
 }
 
 export interface LayoutRoute extends LayoutModule {
@@ -242,6 +243,8 @@ export interface LayoutRoute extends LayoutModule {
    * URLPattern of the route
    */
   compiledPattern: URLPattern;
+
+  top: boolean;
 }
 
 // --- ISLANDS ---
