@@ -38,6 +38,8 @@ const JSX_RUNTIME_MODE = {
   "react-jsx": "automatic",
 } as const;
 
+const diskCacheDir = ".cache/js";
+
 export class Bundler {
   #importMapURL: URL;
   #jsxConfig: JSXConfig;
@@ -126,6 +128,15 @@ export class Bundler {
     }
     this.#cache = cache;
 
+    Deno.remove(diskCacheDir, { recursive: true }).catch(() => {})
+      .then(() => Deno.mkdir(diskCacheDir, { recursive: true }))
+      .then(() =>
+        Promise.all(Array.from(
+          cache.entries(),
+          ([path, contents]) => Deno.writeFile(diskCacheDir + path, contents),
+        ))
+      ).catch(() => {});
+
     return;
   }
 
@@ -139,9 +150,18 @@ export class Bundler {
     return this.#cache as Map<string, Uint8Array>;
   }
 
-  async get(path: string): Promise<Uint8Array | null> {
+  async waitForBundleAndGet(path: string): Promise<Uint8Array | null> {
     const cache = await this.cache();
     return cache.get(path) ?? null;
+  }
+
+  get(path: string): Promise<Uint8Array | null> {
+    return Promise.race([
+      Deno.readFile(diskCacheDir + path).catch(() =>
+        new Promise<Uint8Array>(() => {/* never return */})
+      ),
+      this.waitForBundleAndGet(path),
+    ]);
   }
 
   // getPreloads(path: string): string[] {
