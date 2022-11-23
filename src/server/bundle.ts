@@ -156,6 +156,10 @@ export class Bundler {
   }
 
   get(path: string): Promise<Uint8Array | null> {
+    if (this.#dev) {
+      return this.waitForBundleAndGet(path);
+    }
+
     return Promise.race([
       Deno.readFile(diskCacheDir + path).catch(() =>
         new Promise<Uint8Array>(() => {/* never return */})
