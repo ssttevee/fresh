@@ -128,16 +128,28 @@ export class Bundler {
     }
     this.#cache = cache;
 
-    Deno.remove(diskCacheDir, { recursive: true }).catch(() => {})
-      .then(() => Deno.mkdir(diskCacheDir, { recursive: true }))
-      .then(() =>
-        Promise.all(Array.from(
-          cache.entries(),
-          ([path, contents]) => Deno.writeFile(diskCacheDir + path, contents),
-        ))
-      ).catch(() => {});
-
     return;
+  }
+
+  async writeToDisk(dir = diskCacheDir) {
+    await this.#cache;
+    if (!(this.#cache instanceof Map)) {
+      return;
+    }
+
+    const cache = this.#cache;
+
+    try {
+      await Deno.remove(dir, { recursive: true });
+    } catch {
+      // ignore
+    }
+
+    await Deno.mkdir(dir, { recursive: true });
+    await Promise.all(Array.from(
+      cache.entries(),
+      ([path, contents]) => Deno.writeFile(dir + path, contents),
+    ));
   }
 
   async cache(): Promise<Map<string, Uint8Array>> {

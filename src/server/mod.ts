@@ -72,3 +72,13 @@ export async function start(routes: Manifest, opts: StartOptions = {}) {
     await serve(ctx.handler(), opts);
   }
 }
+
+export async function bundle(
+  routes: Manifest,
+  {
+    dir,
+    ...opts
+  }: Pick<StartOptions, "plugins" | "production"> & { dir?: string },
+) {
+  return (await ServerContext.fromManifest(routes, opts)).buildClientSide(dir);
+}

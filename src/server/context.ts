@@ -78,6 +78,7 @@ export class ServerContext {
     plugins: Plugin[],
     importMapURL: URL,
     jsxConfig: JSXConfig,
+    production = false,
   ) {
     this.#routes = routes;
     this.#islands = islands;
@@ -88,7 +89,8 @@ export class ServerContext {
     this.#notFound = notFound;
     this.#error = error;
     this.#plugins = plugins;
-    this.#dev = typeof Deno.env.get("DENO_DEPLOYMENT_ID") !== "string"; // Env var is only set in prod (on Deploy).
+    this.#dev = !production &&
+      typeof Deno.env.get("DENO_DEPLOYMENT_ID") !== "string"; // Env var is only set in prod (on Deploy).
     this.#bundler = new Bundler(
       this.#islands,
       this.#plugins,
@@ -317,6 +319,7 @@ export class ServerContext {
       opts.plugins ?? [],
       importMapURL,
       jsxConfig,
+      opts.production,
     );
   }
 
@@ -338,6 +341,11 @@ export class ServerContext {
       }
       return withMiddlewares(req, connInfo, inner);
     };
+  }
+
+  async buildClientSide(dir?: string): Promise<void> {
+    await this.#bundler.bundle();
+    await this.#bundler.writeToDisk(dir);
   }
 
   /**
