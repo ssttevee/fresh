@@ -150,6 +150,7 @@ export class Bundler {
       cache.entries(),
       ([path, contents]) => Deno.writeFile(dir + path, contents),
     ));
+    await Deno.writeTextFile(dir + '/buildid', BUILD_ID);
   }
 
   async cache(): Promise<Map<string, Uint8Array>> {
@@ -174,7 +175,7 @@ export class Bundler {
 
     return Promise.race([
       Deno.readFile(diskCacheDir + path).catch(() =>
-        new Promise<Uint8Array>(() => {/* never return */})
+        new Promise<Uint8Array>(() => {/* never return */ })
       ),
       this.waitForBundleAndGet(path),
     ]);
