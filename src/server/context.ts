@@ -632,11 +632,11 @@ export class ServerContext {
   #bundleAssetRoute = (): rutt.MatchHandler => {
     return async (_req, _ctx, params) => {
       const path = `/${params.path}`;
-      const file = await this.#bundler.get(path);
+      const [file, nocache] = await this.#bundler.get(path);
       let res;
       if (file) {
         const headers = new Headers({
-          "Cache-Control": "public, max-age=604800, immutable",
+          "Cache-Control": nocache ? "no-cache, no-store, must-revalidate" : "public, max-age=604800, immutable",
         });
 
         const contentType = typeByExtension(extname(path));

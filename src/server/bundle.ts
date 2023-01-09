@@ -168,16 +168,16 @@ export class Bundler {
     return cache.get(path) ?? null;
   }
 
-  get(path: string): Promise<Uint8Array | null> {
+  get(path: string): Promise<[Uint8Array | null, boolean]> {
     if (this.#dev) {
-      return this.waitForBundleAndGet(path);
+      return this.waitForBundleAndGet(path).then((buf): [Uint8Array | null, false] => [buf, false]);
     }
 
     return Promise.race([
-      Deno.readFile(diskCacheDir + path).catch(() =>
-        new Promise<Uint8Array>(() => {/* never return */ })
-      ),
-      this.waitForBundleAndGet(path),
+      Deno.readFile(diskCacheDir + path)
+        .catch(() => new Promise<Uint8Array>(() => {/* never return */ }))
+        .then((buf): [Uint8Array, true] => [buf, true]),
+      this.waitForBundleAndGet(path).then((buf): [Uint8Array | null, false] => [buf, false]),
     ]);
   }
 
