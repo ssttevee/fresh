@@ -15,6 +15,7 @@ import {
 import { HEAD_CONTEXT } from "../runtime/head.ts";
 import { CSP_CONTEXT, nonce, NONE, UNSAFE_INLINE } from "../runtime/csp.ts";
 import { ContentSecurityPolicy } from "../runtime/csp.ts";
+import { REQUEST_CONTEXT } from "../runtime/request.ts";
 import { bundleAssetUrl } from "./constants.ts";
 import { assetHashingHook } from "../runtime/utils.ts";
 import { htmlEscapeJsonString } from "./htmlescape.ts";
@@ -130,10 +131,18 @@ export async function render<Data, State>(
     value: csp,
     children: h(HEAD_CONTEXT.Provider, {
       value: headComponents,
-      children: h(opts.app.default, {
-        Component() {
-          return h(opts.route.component! as ComponentType<unknown>, props);
+      children: h(REQUEST_CONTEXT.Provider, {
+        value: {
+          url: opts.url,
+          params: opts.params,
+          state: opts.state,
+          data: opts.data,
         },
+        children: h(opts.app.default, {
+          Component() {
+            return h(opts.route.component! as ComponentType<unknown>, props);
+          },
+        }),
       }),
     }),
   });
